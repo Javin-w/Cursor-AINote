@@ -5,6 +5,7 @@ import path from 'path';
 import fs from 'fs';
 
 import { initDatabase } from './database/init';
+import authRouter from './routes/auth';
 import notesRouter from './routes/notes';
 import tasksRouter from './routes/tasks';
 
@@ -27,6 +28,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '../public')));
 
 // API路由
+app.use('/api/auth', authRouter);
 app.use('/api/notes', notesRouter);
 app.use('/api/tasks', tasksRouter);
 
@@ -42,9 +44,16 @@ app.get('/api', (req, res) => {
     version: '1.0.0',
     description: '个人笔记和任务管理API',
     endpoints: {
+      auth: '/api/auth',
       notes: '/api/notes',
       tasks: '/api/tasks',
       health: '/api/health'
+    },
+    authInfo: {
+      register: 'POST /api/auth/register',
+      login: 'POST /api/auth/login',
+      me: 'GET /api/auth/me',
+      refresh: 'POST /api/auth/refresh'
     }
   });
 });

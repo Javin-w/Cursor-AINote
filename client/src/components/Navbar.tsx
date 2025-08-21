@@ -1,9 +1,11 @@
 import { Link, useLocation } from 'react-router-dom';
-import { BookOpen, CheckSquare, Home } from 'lucide-react';
+import { BookOpen, CheckSquare, Home, User, LogOut } from 'lucide-react';
 import clsx from 'clsx';
+import { useAuth } from '../contexts/AuthContext';
 
 const Navbar = () => {
   const location = useLocation();
+  const { isAuthenticated, user, logout } = useAuth();
 
   const navItems = [
     { path: '/', icon: Home, label: '首页' },
@@ -39,33 +41,58 @@ const Navbar = () => {
             </div>
           </div>
 
-          <div className="hidden md:block">
-            <div className="text-sm text-gray-500">
-              个人笔记和任务管理
+          {isAuthenticated && user ? (
+            <div className="hidden md:flex items-center space-x-4">
+              <div className="flex items-center space-x-2 text-sm text-gray-600">
+                <User size={16} />
+                <span>欢迎，{user.username}</span>
+              </div>
+              <button
+                onClick={logout}
+                className="flex items-center space-x-1 px-3 py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
+              >
+                <LogOut size={16} />
+                <span>退出</span>
+              </button>
             </div>
-          </div>
+          ) : (
+            <div className="hidden md:block">
+              <div className="text-sm text-gray-500">
+                个人笔记和任务管理
+              </div>
+            </div>
+          )}
         </div>
 
         {/* 移动端导航 */}
-        <div className="md:hidden border-t border-gray-200">
-          <div className="flex items-center justify-around py-2">
-            {navItems.map(({ path, icon: Icon, label }) => (
-              <Link
-                key={path}
-                to={path}
-                className={clsx(
-                  'flex flex-col items-center space-y-1 p-2 rounded-lg text-xs transition-colors',
-                  location.pathname === path
-                    ? 'text-primary-600'
-                    : 'text-gray-600'
-                )}
+        {isAuthenticated && (
+          <div className="md:hidden border-t border-gray-200">
+            <div className="flex items-center justify-around py-2">
+              {navItems.map(({ path, icon: Icon, label }) => (
+                <Link
+                  key={path}
+                  to={path}
+                  className={clsx(
+                    'flex flex-col items-center space-y-1 p-2 rounded-lg text-xs transition-colors',
+                    location.pathname === path
+                      ? 'text-primary-600'
+                      : 'text-gray-600'
+                  )}
+                >
+                  <Icon size={20} />
+                  <span>{label}</span>
+                </Link>
+              ))}
+              <button
+                onClick={logout}
+                className="flex flex-col items-center space-y-1 p-2 rounded-lg text-xs text-gray-600"
               >
-                <Icon size={20} />
-                <span>{label}</span>
-              </Link>
-            ))}
+                <LogOut size={20} />
+                <span>退出</span>
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </nav>
   );

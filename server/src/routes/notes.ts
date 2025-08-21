@@ -2,17 +2,19 @@ import express from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../database/init';
 import { Note, CreateNoteRequest, UpdateNoteRequest } from '../types';
+import { authenticateToken } from '../middleware/auth';
 
 const router = express.Router();
 
-// 获取所有笔记
-router.get('/', (req, res) => {
+// 获取当前用户的所有笔记
+router.get('/', authenticateToken, (req, res) => {
   const limit = parseInt(req.query.limit as string) || 50;
   const offset = parseInt(req.query.offset as string) || 0;
+  const userId = req.user!.id;
   
   db.all(
-    'SELECT * FROM notes ORDER BY updated_at DESC LIMIT ? OFFSET ?',
-    [limit, offset],
+    'SELECT * FROM notes WHERE user_id = ? ORDER BY updated_at DESC LIMIT ? OFFSET ?',
+    [userId, limit, offset],
     (err, rows) => {
       if (err) {
         res.status(500).json({ error: '获取笔记失败' });
@@ -30,8 +32,10 @@ router.get('/', (req, res) => {
 });
 
 // 获取单个笔记
-router.get('/:id', (req, res) => {
-  db.get('SELECT * FROM notes WHERE id = ?', [req.params.id], (err, row: any) => {
+router.get('/:id', authenticateToken, (req, res) => {
+  const userId = req.user!.id;
+  
+  db.get('SELECT * FROM notes WHERE id = ? AND user_id = ?', [req.params.id, userId], (err, row: any) => {
     if (err) {
       res.status(500).json({ error: '获取笔记失败' });
       return;
@@ -52,8 +56,9 @@ router.get('/:id', (req, res) => {
 });
 
 // 创建笔记
-router.post('/', (req, res) => {
+router.post('/', authenticateToken, (req, res) => {
   const { title, content, tags = [] }: CreateNoteRequest = req.body;
+  const userId = req.user!.id;
   
   if (!title || !content) {
     res.status(400).json({ error: '标题和内容不能为空' });
@@ -64,8 +69,8 @@ router.post('/', (req, res) => {
   const now = new Date().toISOString();
   
   db.run(
-    'INSERT INTO notes (id, title, content, tags, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)',
-    [id, title, content, JSON.stringify(tags), now, now],
+    'INSERT INTO notes (id, user_id, title, content, tags, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)',
+    [id, userId, title, content, JSON.stringify(tags), now, now],
     function(err) {
       if (err) {
         res.status(500).json({ error: '创建笔记失败' });
@@ -74,6 +79,7 @@ router.post('/', (req, res) => {
       
       const note: Note = {
         id,
+        user_id: userId,
         title,
         content,
         tags,
@@ -87,9 +93,10 @@ router.post('/', (req, res) => {
 });
 
 // 更新笔记
-router.put('/:id', (req, res) => {
+router.put('/:id', authenticateToken, (req, res) => {
   const { title, content, tags }: UpdateNoteRequest = req.body;
   const id = req.params.id;
+  const userId = req.user!.id;
   const now = new Date().toISOString();
   
   // 构建动态更新语句
@@ -119,9 +126,10 @@ router.put('/:id', (req, res) => {
   updates.push('updated_at = ?');
   values.push(now);
   values.push(id);
+  values.push(userId);
   
   db.run(
-    `UPDATE notes SET ${updates.join(', ')} WHERE id = ?`,
+    `UPDATE notes SET ${updates.join(', ')} WHERE id = ? AND user_id = ?`,
     values,
     function(err) {
       if (err) {
@@ -130,7 +138,7 @@ router.put('/:id', (req, res) => {
       }
       
       if (this.changes === 0) {
-        res.status(404).json({ error: '笔记不存在' });
+        res.status(404).json({ error: '笔记不存在或无权限访问' });
         return;
       }
       
@@ -140,15 +148,17 @@ router.put('/:id', (req, res) => {
 });
 
 // 删除笔记
-router.delete('/:id', (req, res) => {
-  db.run('DELETE FROM notes WHERE id = ?', [req.params.id], function(err) {
+router.delete('/:id', authenticateToken, (req, res) => {
+  const userId = req.user!.id;
+  
+  db.run('DELETE FROM notes WHERE id = ? AND user_id = ?', [req.params.id, userId], function(err) {
     if (err) {
       res.status(500).json({ error: '删除笔记失败' });
       return;
     }
     
     if (this.changes === 0) {
-      res.status(404).json({ error: '笔记不存在' });
+      res.status(404).json({ error: '笔记不存在或无权限访问' });
       return;
     }
     
@@ -157,12 +167,13 @@ router.delete('/:id', (req, res) => {
 });
 
 // 搜索笔记
-router.get('/search/:query', (req, res) => {
+router.get('/search/:query', authenticateToken, (req, res) => {
   const query = `%${req.params.query}%`;
+  const userId = req.user!.id;
   
   db.all(
-    'SELECT * FROM notes WHERE title LIKE ? OR content LIKE ? ORDER BY updated_at DESC',
-    [query, query],
+    'SELECT * FROM notes WHERE user_id = ? AND (title LIKE ? OR content LIKE ?) ORDER BY updated_at DESC',
+    [userId, query, query],
     (err, rows) => {
       if (err) {
         res.status(500).json({ error: '搜索失败' });

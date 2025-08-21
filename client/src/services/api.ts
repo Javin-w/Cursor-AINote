@@ -1,10 +1,37 @@
 import axios from 'axios';
-import { Note, Task, CreateNoteRequest, UpdateNoteRequest, CreateTaskRequest, UpdateTaskRequest, TaskStats } from '../types';
+import { Note, Task, CreateNoteRequest, UpdateNoteRequest, CreateTaskRequest, UpdateTaskRequest, TaskStats, LoginRequest, RegisterRequest, AuthResponse, User } from '../types';
 
 const api = axios.create({
   baseURL: '/api',
   timeout: 10000,
 });
+
+// 请求拦截器 - 自动添加认证令牌
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// 响应拦截器 - 处理认证失败
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401 || error.response?.status === 403) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
 
 // 笔记相关API
 export const notesApi = {
@@ -84,6 +111,33 @@ export const tasksApi = {
   // 获取任务统计
   getTaskStats: async (): Promise<TaskStats> => {
     const response = await api.get('/tasks/stats/overview');
+    return response.data;
+  },
+};
+
+// 认证相关API
+export const authApi = {
+  // 用户注册
+  register: async (data: RegisterRequest): Promise<AuthResponse> => {
+    const response = await api.post('/auth/register', data);
+    return response.data;
+  },
+
+  // 用户登录
+  login: async (data: LoginRequest): Promise<AuthResponse> => {
+    const response = await api.post('/auth/login', data);
+    return response.data;
+  },
+
+  // 获取当前用户信息
+  me: async (): Promise<{ user: User }> => {
+    const response = await api.get('/auth/me');
+    return response.data;
+  },
+
+  // 刷新令牌
+  refresh: async (): Promise<{ token: string }> => {
+    const response = await api.post('/auth/refresh');
     return response.data;
   },
 };

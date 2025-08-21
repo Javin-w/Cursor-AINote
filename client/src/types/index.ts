@@ -52,3 +52,33 @@ export interface TaskStats {
   completed: number;
   high_priority: number;
 }
+
+// 认证相关类型
+export interface User {
+  id: string;
+  username: string;
+  email: string;
+}
+
+export interface RegisterRequest {
+  username: string;
+  email: string;
+  password: string;
+}
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface AuthResponse {
+  token: string;
+  user: User;
+}
+
+export interface AuthState {
+  isAuthenticated: boolean;
+  user: User | null;
+  token: string | null;
+  loading: boolean;
+}
