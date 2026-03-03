@@ -18,6 +18,20 @@ export interface Task {
   updated_at: string;
 }
 
+export interface KnowledgeItem {
+  id: string;
+  title: string;
+  summary?: string;
+  content: string;
+  category?: string;
+  tags?: string[];
+  source_url?: string;
+  status: 'draft' | 'published' | 'archived';
+  is_favorite: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface CreateNoteRequest {
   title: string;
   content: string;
@@ -45,12 +59,43 @@ export interface UpdateTaskRequest {
   due_date?: string;
 }
 
+export interface CreateKnowledgeItemRequest {
+  title: string;
+  summary?: string;
+  content: string;
+  category?: string;
+  tags?: string[];
+  source_url?: string;
+  status?: 'draft' | 'published' | 'archived';
+  is_favorite?: boolean;
+}
+
+export interface UpdateKnowledgeItemRequest {
+  title?: string;
+  summary?: string;
+  content?: string;
+  category?: string;
+  tags?: string[];
+  source_url?: string;
+  status?: 'draft' | 'published' | 'archived';
+  is_favorite?: boolean;
+}
+
 export interface TaskStats {
   total: number;
   pending: number;
   in_progress: number;
   completed: number;
   high_priority: number;
+}
+
+export interface KnowledgeStats {
+  total: number;
+  draft: number;
+  published: number;
+  archived: number;
+  favorite: number;
+  categories: number;
 }
 
 // 认证相关类型

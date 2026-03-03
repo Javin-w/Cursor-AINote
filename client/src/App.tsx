@@ -6,6 +6,8 @@ import Home from './pages/Home';
 import Notes from './pages/Notes';
 import Tasks from './pages/Tasks';
 import NotePage from './pages/NotePage';
+import Knowledge from './pages/Knowledge';
+import KnowledgePage from './pages/KnowledgePage';
 import Login from './pages/Login';
 import Register from './pages/Register';
 
@@ -28,6 +30,8 @@ function App() {
                   <Route path="/notes" element={<Notes />} />
                   <Route path="/notes/:id" element={<NotePage />} />
                   <Route path="/tasks" element={<Tasks />} />
+                  <Route path="/knowledge" element={<Knowledge />} />
+                  <Route path="/knowledge/:id" element={<KnowledgePage />} />
                 </Routes>
               </main>
             </ProtectedRoute>

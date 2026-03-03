@@ -8,6 +8,7 @@ import { initDatabase } from './database/init';
 import authRouter from './routes/auth';
 import notesRouter from './routes/notes';
 import tasksRouter from './routes/tasks';
+import knowledgeRouter from './routes/knowledge';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -31,6 +32,7 @@ app.use(express.static(path.join(__dirname, '../public')));
 app.use('/api/auth', authRouter);
 app.use('/api/notes', notesRouter);
 app.use('/api/tasks', tasksRouter);
+app.use('/api/knowledge', knowledgeRouter);
 
 // 健康检查
 app.get('/api/health', (req, res) => {
@@ -47,6 +49,7 @@ app.get('/api', (req, res) => {
       auth: '/api/auth',
       notes: '/api/notes',
       tasks: '/api/tasks',
+      knowledge: '/api/knowledge',
       health: '/api/health'
     },
     authInfo: {

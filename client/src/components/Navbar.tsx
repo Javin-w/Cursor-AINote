@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { BookOpen, CheckSquare, Home, User, LogOut } from 'lucide-react';
+import { BookOpen, CheckSquare, Home, Library, User, LogOut } from 'lucide-react';
 import clsx from 'clsx';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -11,7 +11,12 @@ const Navbar = () => {
     { path: '/', icon: Home, label: '首页' },
     { path: '/notes', icon: BookOpen, label: '笔记' },
     { path: '/tasks', icon: CheckSquare, label: '任务' },
+    { path: '/knowledge', icon: Library, label: '知识库' },
   ];
+
+  const isPathActive = (path: string) => (
+    path === '/' ? location.pathname === '/' : location.pathname.startsWith(path)
+  );
 
   return (
     <nav className="bg-white shadow-sm border-b border-gray-200">
@@ -29,7 +34,7 @@ const Navbar = () => {
                   to={path}
                   className={clsx(
                     'flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
-                    location.pathname === path
+                    isPathActive(path)
                       ? 'bg-primary-50 text-primary-700'
                       : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                   )}
@@ -74,7 +79,7 @@ const Navbar = () => {
                   to={path}
                   className={clsx(
                     'flex flex-col items-center space-y-1 p-2 rounded-lg text-xs transition-colors',
-                    location.pathname === path
+                    isPathActive(path)
                       ? 'text-primary-600'
                       : 'text-gray-600'
                   )}
