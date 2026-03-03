@@ -1,7 +1,5 @@
-import { format as formatDate, formatDistanceToNow } from 'date-fns';
-
 // 中文本地化配置
-const zhCN = {
+export const zhCN = {
   code: 'zh-CN',
   formatDistance: {
     lessThanXSeconds: {

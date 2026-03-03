@@ -1,16 +1,19 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, BookOpen, CheckSquare, Clock, AlertCircle } from 'lucide-react';
+import { Plus, BookOpen, CheckSquare, AlertCircle } from 'lucide-react';
 import { format } from '../utils/date';
 import toast from 'react-hot-toast';
 
 import { Note, Task, TaskStats } from '../types';
 import { notesApi, tasksApi } from '../services/api';
+import { useAuth } from '../contexts/AuthContext';
 import QuickNoteForm from '../components/QuickNoteForm';
 import NoteCard from '../components/NoteCard';
 import TaskCard from '../components/TaskCard';
+import FunZone from '../components/FunZone';
 
 const Home = () => {
+  const { user } = useAuth();
   const [recentNotes, setRecentNotes] = useState<Note[]>([]);
   const [urgentTasks, setUrgentTasks] = useState<Task[]>([]);
   const [taskStats, setTaskStats] = useState<TaskStats | null>(null);
@@ -98,6 +101,8 @@ const Home = () => {
           </div>
         </div>
       )}
+
+      <FunZone username={user?.username} onInspirationSaved={handleNoteCreated} />
 
       {/* 快捷操作区 */}
       <div className="grid md:grid-cols-2 gap-8">
