@@ -1,5 +1,21 @@
 import axios from 'axios';
-import { Note, Task, CreateNoteRequest, UpdateNoteRequest, CreateTaskRequest, UpdateTaskRequest, TaskStats, LoginRequest, RegisterRequest, AuthResponse, User } from '../types';
+import {
+  AuthResponse,
+  CreateKnowledgeItemRequest,
+  CreateNoteRequest,
+  CreateTaskRequest,
+  KnowledgeItem,
+  KnowledgeStats,
+  LoginRequest,
+  Note,
+  RegisterRequest,
+  Task,
+  TaskStats,
+  UpdateKnowledgeItemRequest,
+  UpdateNoteRequest,
+  UpdateTaskRequest,
+  User,
+} from '../types';
 
 const api = axios.create({
   baseURL: '/api',
@@ -111,6 +127,68 @@ export const tasksApi = {
   // 获取任务统计
   getTaskStats: async (): Promise<TaskStats> => {
     const response = await api.get('/tasks/stats/overview');
+    return response.data;
+  },
+};
+
+interface KnowledgeQueryParams {
+  keyword?: string;
+  category?: string;
+  status?: 'draft' | 'published' | 'archived';
+  tag?: string;
+  favorite?: boolean;
+  limit?: number;
+  offset?: number;
+}
+
+// 个人知识库相关API
+export const knowledgeApi = {
+  // 获取知识条目列表
+  getKnowledgeItems: async (params?: KnowledgeQueryParams): Promise<KnowledgeItem[]> => {
+    const searchParams = new URLSearchParams();
+    if (params?.keyword) searchParams.append('keyword', params.keyword);
+    if (params?.category) searchParams.append('category', params.category);
+    if (params?.status) searchParams.append('status', params.status);
+    if (params?.tag) searchParams.append('tag', params.tag);
+    if (params?.favorite !== undefined) searchParams.append('favorite', params.favorite ? '1' : '0');
+    if (params?.limit) searchParams.append('limit', params.limit.toString());
+    if (params?.offset) searchParams.append('offset', params.offset.toString());
+
+    const response = await api.get(`/knowledge?${searchParams.toString()}`);
+    return response.data;
+  },
+
+  // 获取单个知识条目
+  getKnowledgeItem: async (id: string): Promise<KnowledgeItem> => {
+    const response = await api.get(`/knowledge/${id}`);
+    return response.data;
+  },
+
+  // 创建知识条目
+  createKnowledgeItem: async (payload: CreateKnowledgeItemRequest): Promise<KnowledgeItem> => {
+    const response = await api.post('/knowledge', payload);
+    return response.data;
+  },
+
+  // 更新知识条目
+  updateKnowledgeItem: async (id: string, payload: UpdateKnowledgeItemRequest): Promise<void> => {
+    await api.put(`/knowledge/${id}`, payload);
+  },
+
+  // 删除知识条目
+  deleteKnowledgeItem: async (id: string): Promise<void> => {
+    await api.delete(`/knowledge/${id}`);
+  },
+
+  // 获取知识库统计
+  getKnowledgeStats: async (): Promise<KnowledgeStats> => {
+    const response = await api.get('/knowledge/stats/overview');
+    return response.data;
+  },
+
+  // 获取分类列表
+  getCategories: async (): Promise<string[]> => {
+    const response = await api.get('/knowledge/categories/list');
     return response.data;
   },
 };

@@ -29,6 +29,21 @@ export interface Task {
   updated_at: string;
 }
 
+export interface KnowledgeItem {
+  id: string;
+  user_id: string;
+  title: string;
+  summary?: string;
+  content: string;
+  category?: string;
+  tags?: string[];
+  source_url?: string;
+  status: 'draft' | 'published' | 'archived';
+  is_favorite: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface CreateNoteRequest {
   title: string;
   content: string;
@@ -54,6 +69,28 @@ export interface UpdateTaskRequest {
   status?: 'pending' | 'in_progress' | 'completed';
   priority?: 'low' | 'medium' | 'high';
   due_date?: string;
+}
+
+export interface CreateKnowledgeItemRequest {
+  title: string;
+  summary?: string;
+  content: string;
+  category?: string;
+  tags?: string[];
+  source_url?: string;
+  status?: 'draft' | 'published' | 'archived';
+  is_favorite?: boolean;
+}
+
+export interface UpdateKnowledgeItemRequest {
+  title?: string;
+  summary?: string;
+  content?: string;
+  category?: string;
+  tags?: string[];
+  source_url?: string;
+  status?: 'draft' | 'published' | 'archived';
+  is_favorite?: boolean;
 }
 
 // 认证相关类型

@@ -48,13 +48,37 @@ export const initDatabase = (): Promise<void> => {
           updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
         )
-      `, (err) => {
-        if (err) {
-          reject(err);
-        } else {
-          console.log('数据库初始化完成');
-          resolve();
+      `, (taskErr) => {
+        if (taskErr) {
+          reject(taskErr);
+          return;
         }
+
+        // 创建个人知识库表
+        db.run(`
+          CREATE TABLE IF NOT EXISTS knowledge_items (
+            id TEXT PRIMARY KEY,
+            user_id TEXT NOT NULL,
+            title TEXT NOT NULL,
+            summary TEXT,
+            content TEXT NOT NULL,
+            category TEXT DEFAULT '未分类',
+            tags TEXT,
+            source_url TEXT,
+            status TEXT NOT NULL DEFAULT 'draft',
+            is_favorite INTEGER NOT NULL DEFAULT 0,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+          )
+        `, (knowledgeErr) => {
+          if (knowledgeErr) {
+            reject(knowledgeErr);
+          } else {
+            console.log('数据库初始化完成');
+            resolve();
+          }
+        });
       });
     });
   });
